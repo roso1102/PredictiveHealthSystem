@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import pandas as pd
-from transformers import AutoTokenizer, AutoModelForCausalLM
 import json
 import os
 import requests
@@ -11,13 +10,14 @@ from src.patient_summary import PatientSummary
 from src.biomarker_analysis import BiomarkerAnalysis
 from src.regional_analysis import RegionalAnalysis
 
-load_dotenv() # Load environment variables from .env file
+load_dotenv(override=True) # Load environment variables from .env file
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
 # Get the absolute path of the directory where the script is located
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 
 # Initialize modules and load data
 try:
@@ -33,12 +33,6 @@ try:
     regional_module = RegionalAnalysis()
     regional_data_path = os.path.join(BASE_DIR, "data", "regional_data.csv")
     regional_module.load_data(regional_data_path)
-    
-    # Temporarily comment out MedGemma model loading to resolve CORS issue
-    # medgemma_tokenizer = AutoTokenizer.from_pretrained("google/medgemma-27b")
-    # medgemma_model = AutoModelForCausalLM.from_pretrained("google/medgemma-27b")
-    medgemma_tokenizer = None
-    medgemma_model = None
 
     # Load DDI library
     ddi_library_path = os.path.join(BASE_DIR, "data", "ddi_library.json")
@@ -51,8 +45,6 @@ except Exception as e:
     patient_module = None
     biomarker_module = None
     regional_module = None
-    medgemma_tokenizer = None
-    medgemma_model = None
     ddi_library = []
 
 @app.route('/')
@@ -133,17 +125,11 @@ def ddi_check():
 
     return jsonify({"interactions": interactions})
 
-@app.route('/medgemma_analyze', methods=['POST'])
-def medgemma_analyze():
-    # This endpoint is intentionally left non-functional to test the fallback.
-    # It simulates the MedGemma service being unavailable.
-    return jsonify({"error": "MedGemma service is currently unavailable."}), 503
-
 @app.route('/gemini_analyze', methods=['POST'])
 def gemini_analyze():
     gemini_api_key = os.getenv("GOOGLE_API_KEY")
     if not gemini_api_key:
-        return jsonify({"error": "GOOGLE_API_key not found in environment variables."}), 500
+        return jsonify({"error": "GOOGLE_API_KEY not found in environment variables."}), 500
 
     data = request.get_json()
     if not data or 'text' not in data or 'region' not in data:
@@ -170,7 +156,7 @@ def gemini_analyze():
         medication_context = f"The patient is currently taking: {', '.join(current_medications)}."
 
 
-    api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={gemini_api_key}"
+    api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{DEFAULT_GEMINI_MODEL}:generateContent?key={gemini_api_key}"
 
     system_prompt = f"""
     You are an expert clinical assistant AI writing suggestions for a qualified doctor. Your task is to extract structured information from clinical notes and provide a differential diagnosis that is heavily biased by regional health trends. Your tone should be professional, collaborative, and suggestive, not prescriptive.
@@ -225,6 +211,15 @@ def gemini_analyze():
         
         return jsonify(structured_response)
 
+    except requests.exceptions.HTTPError as e:
+        # Preserve upstream status details for easier debugging of model/key issues.
+        upstream_status = e.response.status_code if e.response is not None else 500
+        upstream_body = e.response.text if e.response is not None else str(e)
+        return jsonify({
+            "error": "Gemini API request failed",
+            "upstream_status": upstream_status,
+            "details": upstream_body
+        }), 502
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"API request failed: {str(e)}"}), 500
     except (json.JSONDecodeError, KeyError, IndexError) as e:
@@ -243,7 +238,7 @@ def generate_summary():
     if not patient_data:
         return jsonify({"error": "No patient data provided"}), 400
 
-    api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={gemini_api_key}"
+    api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{DEFAULT_GEMINI_MODEL}:generateContent?key={gemini_api_key}"
 
     system_prompt = """
     You are an expert clinical summarization AI. Your task is to synthesize a patient's entire medical record into a concise, actionable summary for a busy clinician.
@@ -274,6 +269,14 @@ def generate_summary():
         
         return jsonify({"summary": summary_text})
 
+    except requests.exceptions.HTTPError as e:
+        upstream_status = e.response.status_code if e.response is not None else 500
+        upstream_body = e.response.text if e.response is not None else str(e)
+        return jsonify({
+            "error": "Gemini API request failed",
+            "upstream_status": upstream_status,
+            "details": upstream_body
+        }), 502
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"API request failed: {str(e)}"}), 500
     except (KeyError, IndexError) as e:

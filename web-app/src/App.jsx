@@ -1,13 +1,11 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import './App.css'
+import './App.css';
 
 import ScribeIcon from './components/ScribeIcon';
-import PatientSummaryIcon from './components/PatientSummaryIcon';
 import TrendsIcon from './components/TrendsIcon';
 import MenuIcon from './components/MenuIcon';
 import ChevronLeftIcon from './components/ChevronLeftIcon';
-import ClipboardUserIcon from './components/ClipboardUserIcon';
 import SearchIcon from './components/SearchIcon';
 import BellIcon from './components/BellIcon';
 import MicIcon from './components/MicIcon';
@@ -16,21 +14,9 @@ import ConditionTag from './components/ConditionTag';
 import InfoCard from './components/InfoCard';
 import Modal from './components/Modal';
 import SearchableDropdown from './components/SearchableDropdown';
-import PatientHistoryColumn from './components/PatientHistoryColumn';
-import ActiveMedications from './components/ActiveMedications';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5000';
 
-const DrugInteractionDetail = ({ interaction }) => (
-    <div>
-        <h3 className="text-xl font-bold text-red-700 mb-2">Drug Interaction Alert</h3>
-        <p className="font-semibold">{interaction.drugA} + {interaction.drugB} ({interaction.risk})</p>
-        <p className="text-gray-600 mt-2">{interaction.note}</p>
-    </div>
-);
-
-
-// --- MOCK DATA (ENHANCED) ---
 const mockPatients = [
   {
     id: 1, name: 'Priya Sharma', age: 34, gender: 'F', bloodGroup: 'O+', abhaId: '12-3656-7890-1234',
@@ -94,21 +80,20 @@ const mockPatients = [
 ];
 
 const mockRegionalData = {
-    cases: [ { disease: 'Dengue', clinic: 'Apollo Clinic', location: { lat: 12.9352, lon: 77.6245 }, count: 15 }, { disease: 'Malaria', clinic: 'Sakra World Hospital', location: { lat: 12.9255, lon: 77.6776 }, count: 8 }, { disease: 'Viral Fever', clinic: "St. John's", location: { lat: 12.9288, lon: 77.6183 }, count: 25 }, { disease: 'Dengue', clinic: 'Manipal Hospital', location: { lat: 12.9602, lon: 77.6482 }, count: 12 }, ],
-    trends: { 'Dengue': [3, 5, 8, 15, 27, 40], 'Malaria': [2, 3, 2, 5, 8, 10], 'Viral Fever': [10, 15, 22, 18, 25, 35], },
-    demographics: { 'Dengue': { '0-18': 30, '19-40': 50, '41-60': 15, '60+': 5 }, 'Malaria': { '0-18': 40, '19-40': 45, '41-60': 10, '60+': 5 }, }
+  trends: {
+    Dengue: [3, 5, 8, 15, 27, 40],
+    Malaria: [2, 3, 2, 5, 8, 10],
+    'Viral Fever': [10, 15, 22, 18, 25, 35],
+  },
 };
 
-// --- Sub-Components (Moved outside main App component to prevent re-renders) ---
-  
-  const ContextualAIPrompt = ({ text }) => (
-    <div className="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded-md text-xs text-yellow-800 flex items-center">
-    <span className="font-bold mr-1
-    ">Expert Tip:</span> {text}
-    </div>
-  );
+const ContextualAIPrompt = ({ text }) => (
+  <div className="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded-md text-xs text-yellow-800">
+    <span className="font-bold mr-1">Expert Tip:</span>{text}
+  </div>
+);
 
-const NewNoteColumn = ({ noteText, setNoteText, handleProcessNotes, isProcessing }) => {
+const IntakeEditor = ({ noteText, setNoteText }) => {
     const [isListening, setIsListening] = useState(false);
     const [contextualPrompt, setContextualPrompt] = useState('');
     const recognitionRef = useRef(null);
@@ -158,186 +143,24 @@ const NewNoteColumn = ({ noteText, setNoteText, handleProcessNotes, isProcessing
     };
 
     return (
-      <div className="w-1/3 p-4 mx-4 flex flex-col">
+      <div className="h-full flex flex-col">
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold" style={{color: '#2C3E50'}}>Diagnosis</h2>
+          <h2 className="text-lg font-semibold" style={{ color: '#2C3E50' }}>Intake Notes</h2>
           <button onClick={handleListen} title="Start/Stop Dictation" className={`p-2 rounded-full ${isListening ? 'bg-red-100 animate-pulse' : 'bg-gray-100 hover:bg-gray-200'}`}>
             <MicIcon isListening={isListening} />
           </button>
         </div>
-        <textarea value={noteText} onChange={(e) => setNoteText(e.target.value)} className="w-full flex-1 p-3 text-sm bg-white rounded-md border border-gray-300 focus:ring-2 focus:ring-[#26A69A] mt-2" placeholder="Type or use voice-to-text..."></textarea>
+        <textarea
+          value={noteText}
+          onChange={(e) => setNoteText(e.target.value)}
+          className="w-full flex-1 p-3 text-sm bg-white rounded-md border border-gray-300 focus:ring-2 focus:ring-[#26A69A] mt-2"
+          placeholder="Type or use voice-to-text..."
+        />
         {contextualPrompt && <ContextualAIPrompt text={contextualPrompt} />}
-        <button onClick={handleProcessNotes} disabled={isProcessing} style={{backgroundColor: '#FF6B6B'}} className="mt-4 w-full text-white font-semibold py-2.5 px-4 rounded-lg hover:opacity-90 disabled:bg-gray-400 flex items-center justify-center"> {isProcessing ? 'Processing...' : 'Process Notes →'} </button>
       </div>
     );
-  };
-
-const AIAssistedVerification = ({ isProcessing, aiResult, ddiAlerts }) => {
-    const ConfidenceBadge = ({ confidence }) => {
-        const percentage = (confidence * 100).toFixed(0);
-        return (
-            <span className="text-sm font-semibold text-green-700 bg-green-100 px-2 py-1 rounded-full">
-                {percentage}%
-            </span>
-        );
-    };
-
-    return (
-        <div className="w-1/3 bg-gray-50 p-4 rounded-lg shadow-inner overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4" style={{ color: '#2C3E50' }}>AI-Assisted Verification</h2>
-            
-            <div className="h-full space-y-4">
-                {isProcessing && (
-                    <div className="flex items-center justify-center h-full">
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5" style={{ color: '#26A69A' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <p className="text-gray-600">Analyzing notes...</p>
-                    </div>
-                )}
-                {!isProcessing && !aiResult && (
-                    <div className="flex items-center justify-center h-full text-center">
-                        <p className="text-gray-500">AI fields will appear here.<br />Click 'Process Notes' to begin.</p>
-                    </div>
-                )}
-                {aiResult && (
-                    <div className="flex flex-col justify-between h-full">
-                        <div className="space-y-5">
-                            {aiResult.missingInfo?.length > 0 && (
-                                <div className="p-3 bg-orange-100 border-l-4 border-orange-400 text-orange-800">
-                                    <h4 className="font-bold text-sm">Missing Information</h4>
-                                    <p className="text-sm mt-1">{aiResult.missingInfo[0]}</p>
-                                </div>
-                            )}
-
-                            {ddiAlerts.length > 0 && (
-                               <div className="p-3 bg-red-100 border-l-4 border-red-400 text-red-800">
-                                   <h4 className="font-bold text-sm">Drug-Drug Interaction Alert!</h4>
-                                   {ddiAlerts.map((alert, i) => (
-                                       <div key={i} className="mt-2 text-sm">
-                                           <p className="font-semibold">{alert.drugA} + {alert.drugB} ({alert.severity})</p>
-                                           <p>{alert.description}</p>
-                                       </div>
-                                   ))}
-                               </div>
-                            )}
-
-                            {aiResult.symptoms?.length > 0 && (
-                                <div>
-                                    <h3 className="text-md font-semibold text-gray-700 mb-2">Symptoms</h3>
-                                    <div className="space-y-2">
-                                        {aiResult.symptoms.map((s, i) => (
-                                            <div key={i} className="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm text-gray-800">
-                                                <p>{s.value}</p>
-                                                <ConfidenceBadge confidence={s.confidence} />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-            
-                            <div>
-                               <h3 className="text-md font-semibold text-gray-700 mb-2">Suggested Diagnosis</h3>
-                               {aiResult.diagnosis?.length > 0 ? (
-                                   <div className="space-y-2">
-                                       {aiResult.diagnosis.map((d, i) => (
-                                            <div key={i} className={`flex justify-between items-center bg-white p-3 rounded-lg shadow-sm border-l-4 ${d.suggestion ? 'border-blue-400' : 'border-gray-300'}`}>
-                                                <div>
-                                                    <p className="font-semibold text-gray-800">{d.description}</p>
-                                                    {d.code && d.code !== 'N/A' && <p className="text-sm text-gray-500">({d.code})</p>}
-                                                </div>
-                                                {d.suggestion ? (
-                                                    <span className="text-sm font-semibold text-blue-700 bg-blue-100 px-2 py-1 rounded-full">Suggested</span>
-                                                ) : (
-                                                    <span className="text-sm font-semibold text-gray-600 bg-gray-200 px-2 py-1 rounded-full">Consider</span>
-                                                )}
-                                            </div>
-                                       ))}
-                                   </div>
-                               ) : (
-                                    <div className="bg-white p-3 rounded-lg shadow-sm text-gray-500 text-sm">No diagnosis suggested based on notes.</div>
-                               )}
-                           </div>
-            
-                            <div>
-                                <h3 className="text-md font-semibold text-gray-700 mb-2">Medication Suggested</h3>
-                                {aiResult.medications?.length > 0 ? (
-                                    <div className="space-y-2">
-                                       {aiResult.medications.map((m, i) => (
-                                            <div key={i} className="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm">
-                                               <p className="text-gray-800">{m.name} {m.dosage} - {m.frequency}</p>
-                                               <ConfidenceBadge confidence={m.confidence} />
-                                            </div>
-                                       ))}
-                                   </div>
-                                ) : (
-                                    <div className="bg-white p-3 rounded-lg shadow-sm text-gray-500 text-sm">None Suggested</div>
-                                )}
-                            </div>
-                        </div>
-                        <div className="pt-4 flex space-x-3 mt-4">
-                            <button className="w-full bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">Edit</button>
-                            <button className="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700">Approve & Save</button>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
 };
-
-const ScribeAndVerifyView = ({ selectedPatient, patients, handlePatientSelect, setModalContent, noteText, setNoteText, handleProcessNotes, isProcessing, aiResult, ddiAlerts }) => ( 
-    <div className="flex flex-1 p-6 bg-white"> 
-        <PatientHistoryColumn 
-            selectedPatient={selectedPatient} 
-            patients={patients} 
-            handlePatientSelect={handlePatientSelect} 
-            setModalContent={setModalContent}
-        /> 
-        <NewNoteColumn 
-            noteText={noteText} 
-            setNoteText={setNoteText} 
-            handleProcessNotes={handleProcessNotes} 
-            isProcessing={isProcessing} 
-        /> 
-        <AIAssistedVerification 
-            isProcessing={isProcessing} 
-            aiResult={aiResult} 
-            ddiAlerts={ddiAlerts} 
-        /> 
-    </div> 
-);
-
-const PatientQueueWidget = ({ isOpen, setOpen, activeTab, setActiveTab, patients, handlePatientSelect, selectedPatientId }) => (
-     <div className="fixed bottom-4 right-4 z-40"> 
-        <div className={`bg-white rounded-lg shadow-2xl border border-gray-200 transition-all duration-300 ease-in-out ${isOpen ? 'w-80 h-96' : 'w-48 h-12'}`}> 
-            <button onClick={() => setOpen(!isOpen)} style={{backgroundColor: '#26A69A'}} className="w-full flex items-center justify-between px-4 py-3 text-white rounded-t-lg"> 
-                <h3 className="font-semibold text-sm flex items-center"><ClipboardUserIcon className="h-5 w-5 mr-2" /> Patient Queue</h3> 
-                <span>{isOpen ? '▼' : '▲'}</span> 
-            </button> 
-            {isOpen && ( 
-                <div className="flex flex-col h-[calc(24rem-3rem)]"> 
-                    <div className="flex border-b border-gray-200"> 
-                        {['Incoming', 'Ongoing', 'Completed'].map(tab => ( 
-                            <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-2 text-sm font-medium ${activeTab === tab ? 'border-b-2 text-[#26A69A] border-[#26A69A]' : 'text-gray-500'}`}> {tab} </button> 
-                        ))} 
-                    </div> 
-                    <div className="overflow-y-auto p-2"> 
-                        {patients.filter(p => p.status === activeTab).map(p => ( 
-                            <button key={p.id} onClick={() => handlePatientSelect(p.id)} className={`w-full text-left p-2 my-1 rounded-md ${selectedPatientId === p.id ? 'bg-teal-50' : 'hover:bg-gray-100'}`}> 
-                                <p className={`font-semibold text-sm ${selectedPatientId === p.id ? 'text-teal-700' : 'text-gray-800'}`}>{p.name}</p> 
-                                <p className="text-xs text-gray-500">ABHA: ...{p.abhaId.slice(-4)}</p> 
-                            </button> 
-                        ))} 
-                    </div> 
-                </div> 
-            )} 
-        </div> 
-    </div>
-);
-
-const SimpleLineChart = ({ data, title, color = '#000000' }) => { 
+const SimpleLineChart = ({ data, title, color = '#000000' }) => {
     const points = useMemo(() => { 
         if (!data || data.length < 2) return ""; 
         const values = data.map(d => parseInt(String(d.value).split('/')[0])); 
@@ -396,93 +219,7 @@ const SimpleBarChart = ({ data, color = '#000000' }) => {
       ); 
 };
 
-const MapComponent = ({ heatMapData }) => { const mapBounds = { minLat: 12.85, maxLat: 13.05, minLon: 77.55, maxLon: 77.75 }; const convertLocationToPercent = ({ lat, lon }) => { const top = 100 - ((lat - mapBounds.minLat) / (mapBounds.maxLat - mapBounds.minLat)) * 100; const left = ((lon - mapBounds.minLon) / (mapBounds.maxLon - mapBounds.minLon)) * 100; return { top: `${top}%`, left: `${left}%` }; }; const maxCount = Math.max(...heatMapData.map(d => d.count)); const heatMapCenter = heatMapData.find(d => d.count === maxCount); return ( <div className="relative w-full h-80 bg-teal-50 rounded-lg overflow-hidden border-2 border-teal-100"> <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.03)_1px,transparent_1px)] bg-[size:2rem_2rem]"></div> {heatMapCenter && ( <div className="absolute rounded-full" style={{ ...convertLocationToPercent(heatMapCenter.location), width: '200px', height: '200px', transform: 'translate(-50%, -50%)', background: 'radial-gradient(circle, rgba(255, 107, 107, 0.6) 0%, rgba(255, 107, 107, 0) 70%)', pointerEvents: 'none' }} ></div> )} {heatMapData.map((data, index) => { const { top, left } = convertLocationToPercent(data.location); return ( <div key={index} className="absolute group" style={{ top, left, transform: 'translate(-50%, -50%)' }}> <div className="w-4 h-4 rounded-full border-2 border-white cursor-pointer animate-pulse" style={{backgroundColor: '#FF6B6B'}}></div> <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1-2 w-max bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"> <p className="font-bold">{data.clinic}</p> <p>{data.disease}: {data.count} cases</p> </div> </div> ) })} </div> ); };
-  
-  const PatientHistoryTimeline = ({ history }) => {
-    if (!history || history.length === 0) {
-      return (
-        <div className="bg-white p-6 rounded-lg shadow-md h-full">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Patient History Timeline</h3>
-            <div className="flex items-center justify-center h-full text-gray-500">
-                <p>No visit history recorded.</p>
-            </div>
-        </div>
-      );
-    }
-    return (
-      <div className="bg-white p-6 rounded-lg shadow-md h-full">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Patient History Timeline</h3>
-        <div className="relative border-l-2 border-teal-200 ml-3 h-[calc(100%-2rem)] overflow-y-auto pr-2">
-          {history.map((visit, index) => (
-            <div key={index} className="mb-8 ml-8">
-              <span className="absolute -left-4 flex items-center justify-center w-8 h-8 bg-teal-100 rounded-full ring-4 ring-white">
-                <svg className="w-4 h-4 text-teal-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path></svg>
-              </span>
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
-                <time className="text-sm font-semibold text-gray-500">{visit.date}</time>
-                <h4 className="text-md font-bold text-teal-800 mt-1">{visit.diagnosis}</h4>
-                <p className="text-sm text-gray-600 mt-2">{visit.notes}</p>
-                <p className="text-xs text-gray-400 mt-2">at {visit.clinic.name}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-const PatientSummaryView = ({ selectedPatient, patients, handlePatientSelect, handleRegenerateSummary, isProcessing, aiResult, setModalContent }) => { 
-      const [isDropdownOpen, setDropdownOpen] = useState(false);
-      if(!selectedPatient) return <div className="p-8">Please select a patient.</div>; 
-      
-      return ( 
-          <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-6" style={{backgroundColor: '#F8F8F8'}}> 
-              <div className="lg:col-span-3 bg-white p-6 rounded-lg shadow-md flex items-center relative"> 
-                   <div style={{backgroundColor: '#26A69A'}} className="w-16 h-16 text-white rounded-full flex items-center justify-center text-2xl font-bold mr-4 flex-shrink-0"> {selectedPatient.name.charAt(0)} </div> 
-                   <div className="flex-grow">
-                        <button onClick={() => setDropdownOpen(!isDropdownOpen)} className="w-full flex justify-between items-center hover:bg-gray-100 p-2 rounded-md">
-                           <div>
-                                <h2 className="text-2xl font-bold text-left" style={{color: '#2C3E50'}}>{selectedPatient.name}</h2> 
-                                <p className="text-sm text-gray-600 text-left">{selectedPatient.age}Y {selectedPatient.gender} • {selectedPatient.bloodGroup} • ABHA: ...{selectedPatient.abhaId.slice(-4)}</p> 
-                           </div>
-                           <span className={`transform transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
-                        </button>
-                        {isDropdownOpen && ( <SearchableDropdown options={patients} onSelect={handlePatientSelect} onClose={() => setDropdownOpen(false)} /> )}
-                   </div>
-              </div> 
-              <div className="lg:col-span-3 bg-teal-50 border border-teal-200 text-teal-900 text-sm p-4 rounded-lg shadow-sm">
-                  <div className="flex justify-between items-start">
-                      <div>
-                          <h3 className="font-semibold mb-1">AI Generated Summary</h3>
-                          <p className={isProcessing && !aiResult ? 'text-gray-400 italic' : ''}>{isProcessing && !aiResult ? 'Generating new summary...' : selectedPatient.aiSummary}</p>
-                      </div>
-                      <button onClick={handleRegenerateSummary} disabled={isProcessing && !aiResult} className="flex items-center text-xs bg-white text-teal-700 font-semibold py-1 px-2 rounded-md border border-teal-200 hover:bg-teal-100 disabled:opacity-50">
-                          <SparklesIcon/> Regenerate
-                      </button>
-                  </div>
-              </div> 
-
-              <div className="lg:col-span-3 flex overflow-x-auto space-x-4 py-4">
-                  <InfoCard title="Red Flag Alerts" className="flex-shrink-0 w-64"><ConditionTag text="Penicillin Allergy" color="red" /></InfoCard> 
-                  <InfoCard title="Pre-existing Conditions" className="flex-shrink-0 w-64">{selectedPatient.preExistingConditions.map(c => <ConditionTag key={c} text={c} color="orange"/>)}</InfoCard> 
-                  <InfoCard title="Known Allergies" className="flex-shrink-0 w-64">{selectedPatient.allergies.map(a => <ConditionTag key={a} text={a} color="orange"/>)}</InfoCard>
-              </div> 
-
-              <div className="lg:col-span-1 h-[500px]">
-                 <PatientHistoryTimeline history={selectedPatient.visitHistory} />
-              </div> 
-
-              <div className="lg:col-span-2 h-[500px]">
-                 <ActiveMedications 
-                    medications={selectedPatient.currentMedications} 
-                    setModalContent={setModalContent}
-                 />
-              </div>
-          </div> 
-      ); 
-  };
-  
-  const RegionalTrendsView = () => {
+const RegionalTrendsView = () => {
     const [dateRange, setDateRange] = useState('Last 4 Weeks');
     const [compareDisease, setCompareDisease] = useState('Malaria');
 
@@ -499,24 +236,14 @@ const PatientSummaryView = ({ selectedPatient, patients, handlePatientSelect, ha
                     <option>Viral Fever</option>
                 </select>
             </div>
-            <div className="lg:col-span-3 bg-white p-6 rounded-lg shadow-md">
-                <h3 className="font-semibold mb-4 text-gray-700">Disease Hotspots - Bengaluru ({dateRange})</h3>
-                <MapComponent heatMapData={mockRegionalData.cases} />
-            </div>
-            <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md space-y-4">
+            <div className="lg:col-span-5 bg-white p-6 rounded-lg shadow-md space-y-4">
                 <h3 className="font-semibold text-gray-700">Weekly Case Trends</h3>
                 <SimpleLineChart data={mockRegionalData.trends['Dengue'].map((v,i) => ({date: `W${i+1}`, value: `${v}`}))} title="Dengue" color="#FF6B6B" />
                 <SimpleLineChart data={mockRegionalData.trends[compareDisease].map((v,i) => ({date: `W${i+1}`, value: `${v}`}))} title={compareDisease} color="#FF8C42" />
             </div>
-            <div className="lg:col-span-5 bg-white p-6 rounded-lg shadow-md">
-                <h3 className="font-semibold mb-4 text-gray-700">Dengue Cases by Age Group</h3>
-                <SimpleBarChart data={mockRegionalData.demographics['Dengue']} color="#26A69A" />
-            </div>
         </div>
     );
   };
-  
-// --- Main App Layout Components (Moved outside App to prevent re-renders) ---
 
 const Sidebar = ({ isSidebarCollapsed, setSidebarCollapsed, activeView, setActiveView }) => {
     const newTeal = '#26A69A'; const darkTeal = '#00897B'; const lightTeal = '#4DB6AC';
@@ -527,7 +254,7 @@ const Sidebar = ({ isSidebarCollapsed, setSidebarCollapsed, activeView, setActiv
                 <button onClick={() => setSidebarCollapsed(!isSidebarCollapsed)} className="p-2 rounded-md" style={{'--hover-bg': lightTeal}} onMouseOver={e => e.currentTarget.style.backgroundColor=lightTeal} onMouseOut={e => e.currentTarget.style.backgroundColor='transparent'}> {isSidebarCollapsed ? <MenuIcon /> : <ChevronLeftIcon />} </button>
             </div>
             <nav className="flex-1 px-2 py-4 space-y-2">
-                {[ {name: 'Scribe & Verify', icon: ScribeIcon}, {name: 'Patient Summary', icon: PatientSummaryIcon}, {name: 'Regional Trends', icon: TrendsIcon} ].map(item => (
+                {[{ name: 'Consultation', icon: ScribeIcon }, { name: 'Regional Trends', icon: TrendsIcon }].map(item => (
                     <a href="#" key={item.name} onClick={() => setActiveView(item.name)} title={item.name} style={{'--active-bg': darkTeal, '--hover-bg': lightTeal}} className={`flex items-center p-3 text-sm font-medium rounded-md transition-colors ${isSidebarCollapsed ? 'justify-center' : ''} ${activeView === item.name ? 'text-white' : ''}`} onMouseOver={e => {if(activeView !== item.name) e.currentTarget.style.backgroundColor=lightTeal}} onMouseOut={e => {if(activeView !== item.name) e.currentTarget.style.backgroundColor='transparent'}} ref={el => { if(el) el.style.backgroundColor = activeView === item.name ? darkTeal : 'transparent'; }} >
                         <item.icon className={isSidebarCollapsed ? "h-6 w-6" : "h-5 w-5 mr-3"}/>
                         {!isSidebarCollapsed && item.name}
@@ -563,99 +290,198 @@ const Header = ({ activeView }) => (
     </header>
 );
 
-const MainContent = ({ activeView, ...props }) => {
-    switch (activeView) {
-      case 'Scribe & Verify': 
-        return <ScribeAndVerifyView {...props} />;
-      case 'Patient Summary': 
-        return <PatientSummaryView {...props} />;
-      case 'Regional Trends': 
-        return <RegionalTrendsView />;
-      default: 
-        return <ScribeAndVerifyView {...props} />;
-    }
+const Stepper = ({ consultationStep }) => {
+  const steps = ['workspace', 'verify', 'finalize'];
+  const labels = { workspace: 'Workspace', verify: 'Verify & Safety', finalize: 'Finalize' };
+  const currentIdx = steps.indexOf(consultationStep);
+  return (
+    <div className="mb-4 bg-white rounded-lg border border-gray-200 px-4 py-3 flex items-center gap-3">
+      {steps.map((step, idx) => (
+        <React.Fragment key={step}>
+          <div className={`text-sm font-medium ${idx <= currentIdx ? 'text-teal-700' : 'text-gray-400'}`}>{labels[step]}</div>
+          {idx < steps.length - 1 && <div className="h-px flex-1 bg-gray-200" />}
+        </React.Fragment>
+      ))}
+    </div>
+  );
 };
 
-// --- Main App Component ---
+const ConfidenceBadge = ({ confidence }) => (
+  <span className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-1 rounded-full">
+    {((confidence || 0) * 100).toFixed(0)}%
+  </span>
+);
+
+const RegionalInsightCard = ({ regionalInsights }) => (
+  <div className="bg-cyan-50 border border-cyan-200 rounded p-3">
+    <h4 className="text-sm font-semibold text-cyan-900">Regional Insights</h4>
+    <p className="text-sm text-cyan-800 mt-1">
+      {regionalInsights?.summary || 'No regional trend context available.'}
+    </p>
+    {regionalInsights?.topDiseases?.length > 0 && (
+      <div className="mt-2 flex flex-wrap gap-2">
+        {regionalInsights.topDiseases.map((disease) => (
+          <span key={disease} className="text-xs px-2 py-1 rounded-full bg-white border border-cyan-300 text-cyan-800">
+            {disease}
+          </span>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
+const ConsultationWorkspace = ({ selectedPatient, patients, handlePatientSelect, noteText, setNoteText, aiResult, regionalInsights }) => {
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const hints = [];
+  if (noteText.length < 30) hints.push('Add symptom duration and severity.');
+  if (!noteText.toLowerCase().includes('bp')) hints.push('Consider adding vitals (BP/HR/Temp).');
+  if (selectedPatient?.allergies?.length) hints.push(`Known allergy: ${selectedPatient.allergies.join(', ')}`);
+  if (aiResult?.missingInfo?.length) hints.push(aiResult.missingInfo[0]);
+
+  return (
+    <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+      <div className="xl:col-span-12 bg-white border border-gray-200 rounded-lg p-4 relative">
+        <div className="text-xs text-gray-500 mb-1">Current patient</div>
+        <button onClick={() => setDropdownOpen(!isDropdownOpen)} className="w-full text-left p-2 rounded hover:bg-gray-50">
+          <div className="font-semibold text-gray-900">{selectedPatient ? selectedPatient.name : 'Select patient'}</div>
+          <div className="text-sm text-gray-500">{selectedPatient ? `${selectedPatient.age}Y ${selectedPatient.gender} • ABHA ...${selectedPatient.abhaId.slice(-4)}` : 'Choose a patient to begin'}</div>
+        </button>
+        {isDropdownOpen && <SearchableDropdown options={patients} onSelect={handlePatientSelect} onClose={() => setDropdownOpen(false)} />}
+      </div>
+      <div className="xl:col-span-4 bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+        <InfoCard title="Pre-existing Conditions">{selectedPatient?.preExistingConditions?.map(c => <ConditionTag key={c} text={c} color="orange" />)}</InfoCard>
+        <InfoCard title="Known Allergies">{selectedPatient?.allergies?.map(a => <ConditionTag key={a} text={a} color="red" />)}</InfoCard>
+        <InfoCard title="Active Medications">{selectedPatient?.currentMedications?.length ? selectedPatient.currentMedications.map(m => <ConditionTag key={m} text={m} color="blue" />) : <span className="text-xs text-gray-500">None reported</span>}</InfoCard>
+      </div>
+      <div className="xl:col-span-5 bg-white border border-gray-200 rounded-lg p-4 min-h-[520px]">
+        <IntakeEditor noteText={noteText} setNoteText={setNoteText} />
+      </div>
+      <div className="xl:col-span-3 bg-white border border-gray-200 rounded-lg p-4">
+        <h3 className="font-semibold text-gray-800 mb-2">Live Guidance</h3>
+        <ul className="space-y-2 text-sm text-gray-700">
+          {hints.map((hint, idx) => <li key={idx} className="bg-amber-50 border border-amber-200 rounded p-2">{hint}</li>)}
+          {!hints.length && <li className="text-gray-500">No prompts right now.</li>}
+        </ul>
+        <div className="mt-4">
+          <RegionalInsightCard regionalInsights={regionalInsights} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const VerifyAndSafety = ({ aiResult, ddiAlerts, ddiAcknowledged, setDdiAcknowledged, errorMessage, regionalInsights }) => {
+  if (!aiResult && !errorMessage) {
+    return <div className="bg-white border border-gray-200 rounded-lg p-6 text-gray-500">Run analysis from Workspace first.</div>;
+  }
+  return (
+    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+      <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-4">
+        <h3 className="font-semibold text-gray-800">AI Verification</h3>
+        {errorMessage && <div className="p-3 text-sm bg-red-50 border border-red-200 text-red-700 rounded">{errorMessage}</div>}
+        {aiResult?.symptoms?.length > 0 && aiResult.symptoms.map((s, i) => (
+          <div key={i} className="flex justify-between p-2 border rounded bg-gray-50"><span>{s.value}</span><ConfidenceBadge confidence={s.confidence} /></div>
+        ))}
+        <div className="space-y-2">
+          <h4 className="text-sm font-semibold text-gray-700">Differential</h4>
+          {aiResult?.diagnosis?.length ? aiResult.diagnosis.map((d, i) => (
+            <div key={i} className={`p-3 rounded border-l-4 ${d.suggestion ? 'border-blue-400 bg-blue-50' : 'border-gray-300 bg-white'}`}>
+              <div className="font-semibold text-gray-800">{d.description}</div>
+              {d.code && d.code !== 'N/A' && <div className="text-xs text-gray-500">Code: {d.code}</div>}
+            </div>
+          )) : <div className="text-sm text-gray-500">No diagnosis generated.</div>}
+        </div>
+      </div>
+      <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-4">
+        <h3 className="font-semibold text-gray-800">Safety Check</h3>
+        <RegionalInsightCard regionalInsights={regionalInsights} />
+        {ddiAlerts?.length > 0 ? (
+          <>
+            {ddiAlerts.map((alert, i) => (
+              <div key={i} className="p-3 bg-red-50 border border-red-200 text-red-700 rounded">
+                <div className="font-semibold">{alert.drugA} + {alert.drugB}</div>
+                <div className="text-sm">{alert.note || alert.description || 'Potential interaction detected.'}</div>
+              </div>
+            ))}
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={ddiAcknowledged} onChange={(e) => setDdiAcknowledged(e.target.checked)} />
+              I reviewed and acknowledge interaction risks.
+            </label>
+          </>
+        ) : (
+          <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded text-sm">No interactions detected in current recommendations.</div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default function App() {
-  const [activeView, setActiveView] = useState('Scribe & Verify');
-  const [selectedPatientId, setSelectedPatientId] = useState(null);
+  const [activeView, setActiveView] = useState('Consultation');
+  const [selectedPatientId, setSelectedPatientId] = useState(mockPatients[0]?.id ?? null);
   const [patients, setPatients] = useState(mockPatients);
-  const [isSidebarCollapsed, setSidebarCollapsed] = useState(true); // Default to collapsed
-  const [isQueueOpen, setQueueOpen] = useState(false); // Default to collapsed
-  const [activeQueueTab, setActiveQueueTab] = useState('Incoming');
+  const [isSidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [modalContent, setModalContent] = useState(null);
+  const [consultationStep, setConsultationStep] = useState('workspace');
+  const [quickComplete, setQuickComplete] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [aiResult, setAiResult] = useState(null);
   const [ddiAlerts, setDdiAlerts] = useState([]);
+  const [ddiAcknowledged, setDdiAcknowledged] = useState(false);
+  const [summaryDraft, setSummaryDraft] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const selectedPatient = useMemo(() => patients.find(p => p.id === selectedPatientId), [selectedPatientId, patients]);
+  const regionalInsights = useMemo(() => {
+    const trendEntries = Object.entries(mockRegionalData.trends || {});
+    if (!trendEntries.length) return { summary: 'No trend data available.', topDiseases: [] };
+    const ranked = trendEntries
+      .map(([name, values]) => ({ name, latest: values[values.length - 1] || 0 }))
+      .sort((a, b) => b.latest - a.latest);
+    const topDiseases = ranked.slice(0, 2).map((d) => d.name);
+    return {
+      summary: `Recent local trend alert: ${topDiseases.join(' and ')} show the highest case activity.`,
+      topDiseases,
+    };
+  }, []);
 
-  useEffect(() => {
-    if (selectedPatientId) {
-        const fetchPatientData = async () => {
-            try {
-                const response = await fetch(`${API_BASE_URL}/patient_summary/${selectedPatientId}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    // Here you would update your state with the fetched data.
-                    // For now, we'll just log it to the console.
-                    console.log('Fetched patient data:', data);
-                }
-            } catch (error) {
-                console.error("Error fetching patient data:", error);
-            }
-        };
-        fetchPatientData();
-    }
-  }, [selectedPatientId]);
+  // Dashboard currently uses local mock patient cards for context rendering.
+  // Avoid noisy 404s from backend IDs that do not match mock IDs (1..4 vs Pxxxx).
 
   const handleProcessNotes = async () => {
     if (!noteText.trim() || !selectedPatient) return;
     setIsProcessing(true);
     setAiResult(null);
     setDdiAlerts([]);
+    setErrorMessage('');
+    setDdiAcknowledged(false);
 
     let analysisResult = null;
 
     try {
-        // First, try the MedGemma endpoint
-        const medgemmaResponse = await fetch(`${API_BASE_URL}/medgemma_analyze`, {
+        const geminiResponse = await fetch(`${API_BASE_URL}/gemini_analyze`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: noteText }),
+            body: JSON.stringify({
+                text: noteText,
+                region: 'Bengaluru',
+                current_medications: selectedPatient.currentMedications || []
+            }),
         });
 
-        if (medgemmaResponse.ok) {
-            analysisResult = await medgemmaResponse.json();
+        if (geminiResponse.ok) {
+            analysisResult = await geminiResponse.json();
         } else {
-            // If MedGemma fails, throw an error to trigger the fallback
-            throw new Error('MedGemma failed, trying fallback.');
+            const errorData = await geminiResponse.json();
+            console.error("Gemini request failed:", errorData);
+            const enrichedMessage = errorData.upstream_status
+              ? `${errorData.error || 'Gemini request failed.'} (upstream ${errorData.upstream_status})`
+              : (errorData.error || 'Gemini request failed.');
+            setErrorMessage(enrichedMessage);
         }
     } catch (error) {
-        console.warn(error.message);
-        try {
-            // Fallback to Gemini endpoint
-            const geminiResponse = await fetch(`${API_BASE_URL}/gemini_analyze`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    text: noteText, 
-                    region: 'Bengaluru', // Hardcoding region for now
-                    current_medications: selectedPatient.currentMedications || []
-                }),
-            });
-
-            if (geminiResponse.ok) {
-                analysisResult = await geminiResponse.json();
-            } else {
-                const errorData = await geminiResponse.json();
-                console.error("Gemini fallback also failed:", errorData.error);
-                // Optionally, set an error state to show in the UI
-            }
-        } catch (fallbackError) {
-            console.error("Error with Gemini fallback:", fallbackError);
-        }
+        console.error("Error with Gemini request:", error);
+        setErrorMessage('Unable to complete AI analysis. Please try again.');
     }
 
     if (analysisResult) {
@@ -685,6 +511,7 @@ export default function App() {
     }
 
     setIsProcessing(false);
+    return !!analysisResult;
   };
   
   const handleRegenerateSummary = async () => {
@@ -712,6 +539,7 @@ export default function App() {
     setPatients(prevPatients => prevPatients.map(p => 
         p.id === selectedPatientId ? { ...p, aiSummary: newSummary } : p
     ));
+    setSummaryDraft(newSummary);
     setIsProcessing(false);
   };
 
@@ -721,7 +549,94 @@ export default function App() {
     document.head.appendChild(style);
   }, []);
 
-  const handlePatientSelect = (id) => { setSelectedPatientId(id); setNoteText(''); setAiResult(null); };
+  const handlePatientSelect = (id) => {
+    setSelectedPatientId(id);
+    setNoteText('');
+    setAiResult(null);
+    setDdiAlerts([]);
+    setSummaryDraft('');
+    setErrorMessage('');
+    setDdiAcknowledged(false);
+    setConsultationStep('workspace');
+  };
+
+  const canAnalyze = selectedPatient && noteText.trim().length > 10 && !isProcessing;
+  const canFinalize = aiResult && (ddiAlerts.length === 0 || ddiAcknowledged);
+  const analyzeReadinessMessage = !selectedPatient
+    ? 'Select a patient to continue.'
+    : noteText.trim().length <= 10
+      ? 'Add at least 10+ characters in intake notes.'
+      : '';
+
+  const goNext = async () => {
+    if (consultationStep === 'workspace') {
+      if (!canAnalyze) return;
+      const ok = await handleProcessNotes();
+      if (ok) setConsultationStep('verify');
+      return;
+    }
+    if (consultationStep === 'verify') {
+      if (!canFinalize) return;
+      if (quickComplete) {
+        handlePatientSelect(null);
+        return;
+      }
+      setConsultationStep('finalize');
+      return;
+    }
+    if (consultationStep === 'finalize') {
+      handlePatientSelect(null);
+    }
+  };
+
+  const goBack = () => {
+    if (consultationStep === 'finalize') setConsultationStep('verify');
+    else if (consultationStep === 'verify') setConsultationStep('workspace');
+  };
+
+  const renderConsultationContent = () => {
+    if (consultationStep === 'workspace') {
+      return (
+        <ConsultationWorkspace
+          selectedPatient={selectedPatient}
+          patients={patients}
+          handlePatientSelect={handlePatientSelect}
+          noteText={noteText}
+          setNoteText={setNoteText}
+          aiResult={aiResult}
+          regionalInsights={regionalInsights}
+        />
+      );
+    }
+    if (consultationStep === 'verify') {
+      return (
+        <VerifyAndSafety
+          aiResult={aiResult}
+          ddiAlerts={ddiAlerts}
+          ddiAcknowledged={ddiAcknowledged}
+          setDdiAcknowledged={setDdiAcknowledged}
+          errorMessage={errorMessage}
+          regionalInsights={regionalInsights}
+        />
+      );
+    }
+    return (
+      <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="font-semibold text-gray-800">Finalize & Handoff</h3>
+          <button onClick={handleRegenerateSummary} disabled={isProcessing || !selectedPatient} className="flex items-center text-xs bg-teal-100 text-teal-700 font-semibold py-1 px-2 rounded border border-teal-200 hover:bg-teal-200 disabled:opacity-50">
+            <SparklesIcon /> Regenerate Summary
+          </button>
+        </div>
+        <textarea
+          value={summaryDraft || selectedPatient?.aiSummary || ''}
+          onChange={(e) => setSummaryDraft(e.target.value)}
+          className="w-full min-h-[220px] p-3 border border-gray-300 rounded text-sm"
+        />
+        <div className="text-sm text-gray-500">Review this summary and save consultation to handoff.</div>
+      </div>
+    );
+  };
   
   return (
     <div className="min-h-screen font-sans text-gray-700 flex" style={{fontFamily: "'Inter', sans-serif", backgroundColor: '#F8F8F8'}}>
@@ -735,34 +650,42 @@ export default function App() {
       <main className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
         <Header activeView={activeView} />
         <div className="flex-1 overflow-y-auto relative">
-          <MainContent 
-            activeView={activeView}
-            selectedPatient={selectedPatient} 
-            patients={patients} 
-            handlePatientSelect={handlePatientSelect} 
-            setModalContent={setModalContent} 
-            noteText={noteText} 
-            setNoteText={setNoteText} 
-            handleProcessNotes={handleProcessNotes} 
-            isProcessing={isProcessing} 
-            aiResult={aiResult} 
-            ddiAlerts={ddiAlerts}
-            handleRegenerateSummary={handleRegenerateSummary}
-          />
-          {activeView === 'Scribe & Verify' && 
-            <PatientQueueWidget 
-              isOpen={isQueueOpen} 
-              setOpen={setQueueOpen} 
-              activeTab={activeQueueTab} 
-              setActiveTab={setActiveQueueTab} 
-              patients={patients} 
-              handlePatientSelect={handlePatientSelect} 
-              selectedPatientId={selectedPatientId} 
-            />
-          }
+          {activeView === 'Regional Trends' ? (
+            <RegionalTrendsView />
+          ) : (
+            <div className="p-6">
+              <Stepper consultationStep={consultationStep} />
+              <div className="mb-4 flex items-center justify-between">
+                <label className="text-sm flex items-center gap-2">
+                  <input type="checkbox" checked={quickComplete} onChange={(e) => setQuickComplete(e.target.checked)} />
+                  Quick complete mode
+                </label>
+                {errorMessage && <span className="text-sm text-red-600">{errorMessage}</span>}
+              </div>
+              {renderConsultationContent()}
+              <div className="sticky bottom-0 mt-4 bg-white border border-gray-200 rounded-lg px-4 py-3 flex justify-between">
+                <button
+                  onClick={goBack}
+                  disabled={consultationStep === 'workspace' || isProcessing}
+                  className="px-4 py-2 rounded bg-gray-100 text-gray-700 disabled:opacity-50"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={goNext}
+                  disabled={(consultationStep === 'workspace' && !canAnalyze) || (consultationStep === 'verify' && !canFinalize) || isProcessing}
+                  className="px-4 py-2 rounded text-white bg-teal-600 disabled:bg-gray-400"
+                >
+                  {consultationStep === 'workspace' ? (isProcessing ? 'Analyzing...' : 'Analyze & Verify') : consultationStep === 'verify' ? (quickComplete ? 'Save Consultation' : 'Confirm Clinical Plan') : 'Start Next Patient'}
+                </button>
+              </div>
+              {consultationStep === 'workspace' && analyzeReadinessMessage && (
+                <div className="mt-2 text-xs text-gray-500">{analyzeReadinessMessage}</div>
+              )}
+            </div>
+          )}
         </div>
       </main>
     </div>
   );
 }
-

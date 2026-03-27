@@ -3,6 +3,7 @@
 *.pyo
 *.pyd
 __pycache__/
+.pycache/
 *.env
 .venv/
 *.venv/
@@ -12,6 +13,9 @@ ENV/
 env.bak/
 venv.bak/
 .pytest_cache/
+.pytest_cache/**
+.mypy_cache/
+.ruff_cache/
 
 # IDE specific files
 .vscode/
@@ -29,6 +33,7 @@ Thumbs.db
 # Test coverage
 htmlcov/
 .coverage
+.coverage.*
 .tox/
 .nox/
 .cache/
@@ -58,3 +63,12 @@ pytest_cache/
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode
 .env
+
+# Frontend/build artifacts
+web-app/node_modules/
+web-app/dist/
+web-app/.vite/
+
+# Local run artifacts
+*.pid
+*.seed
