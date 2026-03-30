@@ -35,7 +35,7 @@ const LandingPage = () => {
                             Aignosis leverages cutting-edge AI to provide predictive health insights, drug interaction alerts, and regional trend analysis to support clinicians and improve patient outcomes.
                         </p>
                         <Link
-                            to="/dashboard"
+                            to="/dashboard/workspace"
                             className="bg-teal-700 text-white font-semibold py-3 px-8 rounded-full text-lg hover:bg-teal-600 transition-transform transform hover:scale-105 inline-block shadow-lg"
                             style={{ backgroundColor: '#26A69A', color: '#ffffff' }}
                         >

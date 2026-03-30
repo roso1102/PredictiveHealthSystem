@@ -1,6 +1,6 @@
 import pandas as pd
 import plotly.express as px
-from typing import Dict, List
+from typing import Dict, List, Optional
 from datetime import datetime
 
 class PatientSummary:
@@ -12,6 +12,30 @@ class PatientSummary:
         self.patient_data = pd.read_csv(data_path)
         # Convert date strings to datetime objects
         self.patient_data['visit_date'] = pd.to_datetime(self.patient_data['visit_date'])
+
+    def list_patient_directory(self, q: Optional[str] = None) -> List[Dict]:
+        """Aggregated directory rows for GET /patients (unique patient_id from CSV)."""
+        if self.patient_data is None or self.patient_data.empty:
+            return []
+
+        pids = self.patient_data['patient_id'].unique()
+        if q:
+            qq = q.strip().lower()
+            pids = [p for p in pids if qq in str(p).lower()]
+
+        out: List[Dict] = []
+        for pid in sorted(pids, key=lambda x: str(x)):
+            sub = self.patient_data[self.patient_data['patient_id'] == pid].sort_values('visit_date')
+            last = sub.iloc[-1]
+            out.append({
+                'patient_id': str(pid),
+                'age': int(last['age']) if pd.notna(last.get('age')) else None,
+                'gender': str(last['gender']) if pd.notna(last.get('gender')) else '',
+                'visit_count': int(len(sub)),
+                'last_visit': last['visit_date'].strftime('%Y-%m-%d'),
+                'last_diagnosis': str(last['diagnosis']) if pd.notna(last.get('diagnosis')) else '',
+            })
+        return out
         
     def get_visit_timeline(self, patient_id: str) -> List[Dict]:
         """Get a timeline of patient visits"""

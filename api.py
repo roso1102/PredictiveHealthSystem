@@ -33,6 +33,9 @@ try:
     regional_module = RegionalAnalysis()
     regional_data_path = os.path.join(BASE_DIR, "data", "regional_data.csv")
     regional_module.load_data(regional_data_path)
+    bengaluru_path = os.path.join(BASE_DIR, "data", "bengaluru_regional_data.csv")
+    if os.path.isfile(bengaluru_path):
+        regional_module.load_bengaluru_data(bengaluru_path)
 
     # Load DDI library
     ddi_library_path = os.path.join(BASE_DIR, "data", "ddi_library.json")
@@ -94,11 +97,49 @@ def get_regional_trends(region):
     try:
         analysis = regional_module.analyze_regional_patterns(region)
         if not analysis:
+            if regional_module.is_bangalore_region(region):
+                return jsonify({"error": "Bengaluru dataset not loaded"}), 404
             return jsonify({"error": "No data available for selected region"}), 404
-        
+
         return jsonify(analysis)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route('/patients', methods=['GET'])
+def list_patients():
+    if not patient_module:
+        return jsonify({"error": "Patient module not initialized"}), 500
+    try:
+        q = request.args.get('q')
+        patients = patient_module.list_patient_directory(q=q)
+        return jsonify({"patients": patients})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/regional_map_points', methods=['GET'])
+def regional_map_points():
+    if not regional_module:
+        return jsonify({"error": "Regional module not initialized"}), 500
+    try:
+        disease = request.args.get('disease', 'all')
+        city = request.args.get('city', 'global')
+        diseases_arg = request.args.get('diseases')
+        diseases_list = None
+        if diseases_arg:
+            diseases_list = [d.strip() for d in diseases_arg.split(',') if d.strip()]
+        elif request.args.getlist('diseases'):
+            diseases_list = [d.strip() for d in request.args.getlist('diseases') if d.strip()]
+        payload = regional_module.get_map_points(
+            disease=disease if disease else 'all',
+            city=city if city and city.lower() != 'global' else None,
+            diseases=diseases_list,
+        )
+        return jsonify(payload)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route('/ddi_check', methods=['POST'])
 def ddi_check():
@@ -171,8 +212,22 @@ def gemini_analyze():
     {{
       "symptoms": [{{"value": "Symptom description", "confidence": 0.95}}],
       "diagnosis": [
-          {{"description": "Most Likely Diagnosis", "code": "J06.9", "suggestion": true, "confidence": 0.85}},
-          {{"description": "Alternative Diagnosis to Consider", "code": "A90", "suggestion": false, "confidence": 0.70}}
+          {{
+            "description": "Most Likely Diagnosis",
+            "code": "J06.9",
+            "suggestion": true,
+            "confidence": 0.85,
+            "source_title": "WHO Clinical Guidance",
+            "source_url": "https://www.who.int/"
+          }},
+          {{
+            "description": "Alternative Diagnosis to Consider",
+            "code": "A90",
+            "suggestion": false,
+            "confidence": 0.70,
+            "source_title": "CDC Differential Diagnosis",
+            "source_url": "https://www.cdc.gov/"
+          }}
        ],
       "medications": [{{"name": "Paracetamol", "dosage": "500mg", "frequency": "TDS", "confidence": 0.99}}],
       "missingInfo": ["Patient's blood pressure was not recorded. Request vitals."]
@@ -181,6 +236,8 @@ def gemini_analyze():
     Instructions:
     - Your top priority is to use the REGIONAL CONTEXT to bias your diagnosis. For example, if the notes say "fever, headache" and the regional context says "high prevalence of Dengue", Dengue MUST be a top differential diagnosis, even if the symptoms also fit other viral fevers.
     - For "diagnosis", generate a list of potential diagnoses, with the most likely one first. The most likely diagnosis should have `"suggestion": true`. All other possibilities should have `"suggestion": false`.
+    - For EACH diagnosis entry, include `"source_title"` and `"source_url"` from a credible public clinical source (WHO, CDC, NIH, peer-reviewed guidelines, recognized medical societies).
+    - Ensure each `"source_url"` is a valid HTTPS URL.
     - CRITICAL SAFETY INSTRUCTION: Before suggesting any medication, you MUST consider the patient's current medications ({medication_context}). If a common treatment interacts with them, note the risk and suggest a safer alternative.
     - Based on your "Most Likely Diagnosis", suggest a potential first-line medication to consider, unless a treatment is already mentioned. For common symptoms (e.g., fever, cough), suggesting a symptomatic treatment is appropriate. Frame it as a suggestion (e.g., "Consider Paracetamol...").
     - If the text provides absolutely no clinical information, return a diagnosis of `[{{"description": "No clinical information provided", "code": "N/A", "suggestion": false, "confidence": 0.0}}]`.

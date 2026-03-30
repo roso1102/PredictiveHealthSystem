@@ -1,0 +1,81 @@
+patient_id,area,latitude,longitude,diagnosis,visit_date,age,gender,region
+P-BLR-1001,Koramangala,12.9340,77.6230,Dengue,2025-03-01,34,F,Bangalore
+P-BLR-1002,Koramangala,12.9360,77.6260,Dengue,2025-03-02,28,M,Bangalore
+P-BLR-1003,Koramangala,12.9335,77.6245,Viral Fever,2025-03-03,41,F,Bangalore
+P-BLR-1004,Koramangala,12.9355,77.6255,Respiratory Infection,2025-03-04,52,M,Bangalore
+P-BLR-1005,Koramangala,12.9348,77.6240,Dengue,2025-03-05,19,F,Bangalore
+P-BLR-1006,Koramangala,12.9350,77.6270,Viral Fever,2025-03-06,36,M,Bangalore
+P-BLR-1007,Koramangala,12.9330,77.6225,Typhoid,2025-03-07,45,F,Bangalore
+P-BLR-1008,Koramangala,12.9362,77.6238,Dengue,2025-03-08,22,F,Bangalore
+P-BLR-1009,Koramangala,12.9342,77.6262,Malaria,2025-03-09,30,M,Bangalore
+P-BLR-1010,Koramangala,12.9358,77.6248,Viral Fever,2025-03-10,27,F,Bangalore
+P-BLR-1011,Indiranagar,12.9780,77.6395,Dengue,2025-03-01,31,M,Bangalore
+P-BLR-1012,Indiranagar,12.9790,77.6410,Viral Fever,2025-03-02,48,F,Bangalore
+P-BLR-1013,Indiranagar,12.9775,77.6405,Respiratory Infection,2025-03-03,55,M,Bangalore
+P-BLR-1014,Indiranagar,12.9788,77.6420,Dengue,2025-03-04,26,F,Bangalore
+P-BLR-1015,Indiranagar,12.9795,77.6390,Viral Fever,2025-03-05,33,M,Bangalore
+P-BLR-1016,Indiranagar,12.9770,77.6415,Dengue,2025-03-06,40,F,Bangalore
+P-BLR-1017,Indiranagar,12.9800,77.6400,Gastroenteritis,2025-03-07,29,M,Bangalore
+P-BLR-1018,Indiranagar,12.9783,77.6388,Viral Fever,2025-03-08,37,F,Bangalore
+P-BLR-1019,Whitefield,12.9685,77.7485,Dengue,2025-03-01,42,M,Bangalore
+P-BLR-1020,Whitefield,12.9710,77.7520,Respiratory Infection,2025-03-02,51,F,Bangalore
+P-BLR-1021,Whitefield,12.9695,77.7495,Viral Fever,2025-03-03,24,M,Bangalore
+P-BLR-1022,Whitefield,12.9705,77.7510,Dengue,2025-03-04,35,F,Bangalore
+P-BLR-1023,Whitefield,12.9680,77.7500,Malaria,2025-03-05,44,M,Bangalore
+P-BLR-1024,Whitefield,12.9715,77.7480,Viral Fever,2025-03-06,31,F,Bangalore
+P-BLR-1025,Whitefield,12.9690,77.7515,Dengue,2025-03-07,28,M,Bangalore
+P-BLR-1026,Whitefield,12.9700,77.7490,Respiratory Infection,2025-03-08,59,F,Bangalore
+P-BLR-1027,Jayanagar,12.9240,77.5925,Viral Fever,2025-03-01,46,M,Bangalore
+P-BLR-1028,Jayanagar,12.9260,77.5945,Dengue,2025-03-02,32,F,Bangalore
+P-BLR-1029,Jayanagar,12.9250,77.5930,Typhoid,2025-03-03,38,M,Bangalore
+P-BLR-1030,Jayanagar,12.9245,77.5950,Viral Fever,2025-03-04,21,F,Bangalore
+P-BLR-1031,Jayanagar,12.9265,77.5920,Dengue,2025-03-05,54,F,Bangalore
+P-BLR-1032,Jayanagar,12.9235,77.5940,Respiratory Infection,2025-03-06,43,M,Bangalore
+P-BLR-1033,Hebbal,13.0345,77.5960,Respiratory Infection,2025-03-01,49,F,Bangalore
+P-BLR-1034,Hebbal,13.0360,77.5980,Viral Fever,2025-03-02,36,M,Bangalore
+P-BLR-1035,Hebbal,13.0350,77.5975,Dengue,2025-03-03,27,F,Bangalore
+P-BLR-1036,Hebbal,13.0365,77.5955,Viral Fever,2025-03-04,41,M,Bangalore
+P-BLR-1037,Hebbal,13.0338,77.5970,Malaria,2025-03-05,33,F,Bangalore
+P-BLR-1038,Rajajinagar,12.9910,77.5510,Dengue,2025-03-01,57,M,Bangalore
+P-BLR-1039,Rajajinagar,12.9925,77.5530,Viral Fever,2025-03-02,45,F,Bangalore
+P-BLR-1040,Rajajinagar,12.9900,77.5525,Respiratory Infection,2025-03-03,39,M,Bangalore
+P-BLR-1041,Rajajinagar,12.9918,77.5505,Viral Fever,2025-03-04,29,F,Bangalore
+P-BLR-1042,Banashankari,12.9248,77.5725,Viral Fever,2025-03-01,34,M,Bangalore
+P-BLR-1043,Banashankari,12.9262,77.5740,Dengue,2025-03-02,47,F,Bangalore
+P-BLR-1044,Banashankari,12.9255,77.5730,Typhoid,2025-03-03,52,M,Bangalore
+P-BLR-1045,Banashankari,12.9240,77.5735,Viral Fever,2025-03-04,30,F,Bangalore
+P-BLR-1046,Electronic City,12.8460,77.6620,Respiratory Infection,2025-03-01,25,M,Bangalore
+P-BLR-1047,Electronic City,12.8450,77.6590,Viral Fever,2025-03-02,44,F,Bangalore
+P-BLR-1048,Electronic City,12.8470,77.6610,Dengue,2025-03-03,36,M,Bangalore
+P-BLR-1049,Electronic City,12.8465,77.6605,Viral Fever,2025-03-04,28,F,Bangalore
+P-BLR-1050,Yelahanka,13.0995,77.5950,Dengue,2025-03-01,31,M,Bangalore
+P-BLR-1051,Yelahanka,13.1010,77.5975,Viral Fever,2025-03-02,40,F,Bangalore
+P-BLR-1052,Yelahanka,13.1000,77.5960,Respiratory Infection,2025-03-03,22,M,Bangalore
+P-BLR-1053,Yelahanka,13.1020,77.5955,Viral Fever,2025-03-04,55,F,Bangalore
+P-BLR-1054,Marathahalli,12.9580,77.6960,Dengue,2025-03-01,33,F,Bangalore
+P-BLR-1055,Marathahalli,12.9600,77.6980,Viral Fever,2025-03-02,41,M,Bangalore
+P-BLR-1056,Marathahalli,12.9590,77.6970,Dengue,2025-03-03,26,F,Bangalore
+P-BLR-1057,Marathahalli,12.9585,77.6965,Respiratory Infection,2025-03-04,48,M,Bangalore
+P-BLR-1058,Marathahalli,12.9605,77.6975,Malaria,2025-03-05,35,F,Bangalore
+P-BLR-1059,HSR Layout,12.9120,77.6460,Viral Fever,2025-03-01,29,M,Bangalore
+P-BLR-1060,HSR Layout,12.9110,77.6480,Dengue,2025-03-02,43,F,Bangalore
+P-BLR-1061,HSR Layout,12.9125,77.6470,Viral Fever,2025-03-03,37,M,Bangalore
+P-BLR-1062,HSR Layout,12.9105,77.6465,Dengue,2025-03-04,24,F,Bangalore
+P-BLR-1063,Malleswaram,12.9928,77.5675,Respiratory Infection,2025-03-01,50,F,Bangalore
+P-BLR-1064,Malleswaram,12.9940,77.5690,Viral Fever,2025-03-02,38,M,Bangalore
+P-BLR-1065,Malleswaram,12.9930,77.5680,Dengue,2025-03-03,46,F,Bangalore
+P-BLR-1066,Malleswaram,12.9920,77.5685,Viral Fever,2025-03-04,33,M,Bangalore
+P-BLR-1067,Koramangala,12.9345,77.6255,Dengue,2025-03-11,34,F,Bangalore
+P-BLR-1068,Koramangala,12.9353,77.6242,Viral Fever,2025-03-12,29,M,Bangalore
+P-BLR-1069,Whitefield,12.9708,77.7505,Dengue,2025-03-11,42,F,Bangalore
+P-BLR-1070,Indiranagar,12.9792,77.6402,Viral Fever,2025-03-11,31,M,Bangalore
+P-BLR-1071,Jayanagar,12.9258,77.5938,Dengue,2025-03-12,27,F,Bangalore
+P-BLR-1072,Hebbal,13.0352,77.5968,Respiratory Infection,2025-03-12,44,M,Bangalore
+P-BLR-1073,Marathahalli,12.9595,77.6978,Dengue,2025-03-12,39,F,Bangalore
+P-BLR-1074,HSR Layout,12.9118,77.6472,Viral Fever,2025-03-13,32,M,Bangalore
+P-BLR-1075,Banashankari,12.9258,77.5732,Viral Fever,2025-03-13,48,F,Bangalore
+P-BLR-1076,Rajajinagar,12.9915,77.5515,Dengue,2025-03-13,41,M,Bangalore
+P-BLR-1077,Yelahanka,13.1005,77.5962,Viral Fever,2025-03-13,36,F,Bangalore
+P-BLR-1078,Electronic City,12.8468,77.6608,Typhoid,2025-03-14,30,M,Bangalore
+P-BLR-1079,Malleswaram,12.9935,77.5688,Dengue,2025-03-14,52,F,Bangalore
+P-BLR-1080,Koramangala,12.9348,77.6250,Viral Fever,2025-03-14,25,F,Bangalore

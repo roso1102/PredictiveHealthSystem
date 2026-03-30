@@ -1,4 +1,80 @@
 @import "tailwindcss";
+
+/* Stitch / Material Design 3 palette (Aignosis) */
+@theme {
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+  --color-primary-fixed-dim: #6bd8cb;
+  --color-primary-container: #008378;
+  --color-on-background: #131b2e;
+  --color-on-primary-fixed-variant: #005049;
+  --color-on-secondary: #ffffff;
+  --color-primary: #00685f;
+  --color-on-error: #ffffff;
+  --color-on-surface: #131b2e;
+  --color-on-primary: #ffffff;
+  --color-outline-variant: #bcc9c6;
+  --color-tertiary-container: #b05e3d;
+  --color-background: #faf8ff;
+  --color-surface: #faf8ff;
+  --color-secondary-container: #c2ebe3;
+  --color-on-secondary-fixed-variant: #274d48;
+  --color-on-tertiary-fixed: #370e00;
+  --color-surface-variant: #dae2fd;
+  --color-inverse-primary: #6bd8cb;
+  --color-on-surface-variant: #3d4947;
+  --color-surface-container-high: #e2e7ff;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-fixed: #ffdbce;
+  --color-on-primary-fixed: #00201d;
+  --color-inverse-on-surface: #eef0ff;
+  --color-on-secondary-container: #456b66;
+  --color-surface-container: #eaedff;
+  --color-surface-bright: #faf8ff;
+  --color-on-secondary-fixed: #00201d;
+  --color-tertiary: #924628;
+  --color-on-tertiary-container: #fffbff;
+  --color-error: #ba1a1a;
+  --color-on-primary-container: #f4fffc;
+  --color-surface-dim: #d2d9f4;
+  --color-surface-tint: #006a61;
+  --color-error-container: #ffdad6;
+  --color-outline: #6d7a77;
+  --color-surface-container-highest: #dae2fd;
+  --color-surface-container-low: #f2f3ff;
+  --color-on-error-container: #93000a;
+  --color-tertiary-fixed-dim: #ffb59a;
+  --color-inverse-surface: #283044;
+  --color-surface-container-lowest: #ffffff;
+  --color-secondary-fixed: #c2ebe3;
+  --color-primary-fixed: #89f5e7;
+  --color-secondary-fixed-dim: #a6cfc8;
+  --color-secondary: #3f6560;
+  --color-on-tertiary-fixed-variant: #773215;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  body {
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  }
+}
+
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  vertical-align: middle;
+}
+
+.glass-panel {
+  background: rgba(250, 248, 255, 0.8);
+  backdrop-filter: blur(12px);
+}
+
+.primary-gradient {
+  background: linear-gradient(135deg, #00685f 0%, #008378 100%);
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -18,7 +94,6 @@
   animation: fadeInUp 0.8s ease-out forwards;
 }
 
-/* Delay for staggered animations */
 .is-visible .delay-1 {
   animation-delay: 0.2s;
 }
