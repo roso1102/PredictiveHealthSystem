@@ -28,7 +28,7 @@ class BiomarkerAnalysis:
             # Handle missing values
             self.biomarker_data = self.biomarker_data.dropna(subset=['patient_id'])
             numeric_columns = self.biomarker_data.select_dtypes(include=[np.number]).columns
-            self.biomarker_data[numeric_columns] = self.biomarker_data[numeric_columns].fillna(method='ffill')
+            self.biomarker_data[numeric_columns] = self.biomarker_data[numeric_columns].ffill()
             
         except FileNotFoundError as e:
             raise FileNotFoundError(f"Could not find data file: {str(e)}")
